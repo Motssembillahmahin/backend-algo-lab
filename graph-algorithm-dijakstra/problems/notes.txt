@@ -1,0 +1,138 @@
+-------------------------------------Brute-Force(Bellman-Ford algorithm) Approach for Network Delay Time -----------------------------------
+Overview
+To solve Network Delay Time, using a brute force method, you treat the network as a directed graph and attempt to find the minimum time it takes for a signal to reach all nodes from a starting node k. The bruteforce approach relies on repetitive, exhaustive updates to find the shortest time to each node, even if it means many possible paths are checked.
+
+Key Considerations -
+    Use a Distance Array: Track the minimum time needed to reach each node from k.
+    Repeat Updates: Don't stop at the first reachable path—always check if a better (shorter) path turns up in later rounds.
+    Handle Unreachable Nodes: After your passes, if any node can't be reached, return -1.
+    No Early Stopping: Brute force means exhaustively relaxing all edges, not just quick greedy choices.
+    Can Get Slow: This method works without fancy data structures but is less efficient than optimal solutions (like Dijkstra's algorithm).
+
+What You Should Consider -
+    Initialize all distances to infinity except the starting node k, which is set to 0.
+    Perform n−1n−1 rounds of edge relaxation, ensuring all indirect routes are explored (like chains or cycles).
+    On each edge relaxation round: Only update a destination node if you find a strictly shorter path.
+    After relaxing, check if any node is still unreachable (distance is infinity). If so, return -1.
+    Otherwise, the answer is the maximum of the shortest path times to all nodes.
+
+What to Neglect -
+    Don't mark nodes as visited and stop updating them; brute force must let nodes be updated multiple times in successive rounds.
+    Don't stop early unless you’re sure all shortest paths are finalized (which Bellman-Ford guarantees after n−1n−1 passes).
+    Don't use more advanced algorithms (like priority queues for Dijkstra) if you specifically want brute force.
+
+Step-by-Step Pseudocode
+function network_delay_time(times, n, k):
+    # 1. Initialize distances
+    dist = [infinity] * (n + 1)  # index 0 unused
+    dist[k] = 0
+
+    # 2. Relax all edges n-1 times
+    for i = 1 to n-1:
+        for each edge (u, v, w) in times:
+            # If we can improve v's distance through u
+            if dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+
+    # 3. Check for unreachable nodes & return answer
+    ans = max(dist[1 to n])  # ignore index 0
+    if ans == infinity:
+        return -1
+    else:
+        return ans
+
+Example Walkthrough
+Suppose times = [[2][1][1], [2][3][1], [3][4][1]], n = 4, k = 2:
+    Set dist[2]=0; all others inf.
+    First pass: update dist[1]=1, dist[3]=1 from node 2. Then use dist[3]=1 to update dist[4]=2.
+    No further improvements; all nodes reached. Maximum distance is 2.
+
+Time Complexity
+    Worst and Average Case:
+        The Bellman-Ford algorithm runs in O(V×E)O(V×E) time. For each of the n−1n−1 rounds, it examines each edge in the graph, systematically relaxing all edges to attempt updates to shortest paths.
+
+Space Complexity
+    The space used is O(V)O(V), mainly for the distance array
+
+-----------------------------------------Dijkstra's Algorithm Approach for Network Delay Time -----------------------------------------
+
+Overview
+To solve LeetCode 743, Network Delay Time, using Dijkstra's algorithm, you find the shortest path from the starting node k to all other nodes in the directed, weighted graph. Dijkstra's algorithm is optimal for graphs with non-negative edge weights and uses a priority queue (min-heap) to efficiently select the next closest node to process.
+
+Key Considerations
+    Use a Min-Heap (Priority Queue): Always expand the node with the shortest known distance first to guarantee optimal paths.
+    Build an Adjacency List: Store the graph structure so you can quickly look up neighbors and edge weights for each node.
+    Track Visited Nodes: Once a node is processed (popped from the heap with its shortest distance), don't reprocess it.
+    Handle Unreachable Nodes: After the algorithm completes, check if all n nodes were reached; if not, return -1.
+    Greedy Approach: Dijkstra is a greedy algorithm—it makes locally optimal choices (always picking the nearest unvisited node) that lead to a globally optimal solution.
+
+What You Should Consider
+    Initialize the priority queue with the starting node k at time 0.
+    Build a graph representation (adjacency list) from the times array for fast neighbor lookups.
+    Use a dictionary or set to track the shortest time to reach each node (only record once when popped from heap).
+    For each node processed, update all its neighbors by pushing (current_time + edge_weight, neighbor) to the heap if the neighbor hasn't been finalized yet.
+    After processing, check if all n nodes are in your visited/distance tracking structure.
+    Return the maximum distance among all reachable nodes (the time when the last node receives the signal), or -1 if any node is unreachable.
+
+What to Neglect
+    Don't use simple arrays or linear search for finding the minimum—this makes Dijkstra inefficient (degrades to O(V2)O(V2)).
+    Don't reprocess nodes that have already been finalized with their shortest distance.
+    Don't worry about negative edge weights—this problem guarantees positive weights, so Dijkstra works perfectly.
+    Don't use Bellman-Ford or DFS/BFS without optimization—Dijkstra is the standard efficient choice here.
+
+Step-by-Step Pseudocode
+function network_delay_time_dijkstra(times, n, k):
+    # 1. Build adjacency list
+    graph = empty adjacency list (dict of lists)
+    for each (u, v, w) in times:
+        graph[u].append((v, w))
+
+    # 2. Initialize min-heap and visited tracking
+    min_heap = [(0, k)]  # (time, node)
+    visited = {}         # node -> shortest time
+
+    # 3. Process nodes in order of shortest distance
+    while min_heap is not empty:
+        time, node = extract_min(min_heap)
+
+        if node already in visited:
+            continue  # Already processed with shorter time
+
+        visited[node] = time
+
+        # Explore neighbors
+        for (neighbor, travel_time) in graph[node]:
+            if neighbor not in visited:
+                push (time + travel_time, neighbor) to min_heap
+
+    # 4. Check if all nodes reached
+    if length(visited) == n:
+        return max(visited.values())
+    else:
+        return -1
+
+
+Example Walkthrough
+Suppose times = [[8][11][11], [8][12][11], [12][13][11]], n = 4, k = 2:
+
+    Start with heap: [(0, 2)]
+
+    Process node 2 (time=0): Add neighbors 1 and 3 → heap: [(1, 1), (1, 3)]
+
+    Process node 1 (time=1): No neighbors → heap: [(1, 3)]
+
+    Process node 3 (time=1): Add neighbor 4 → heap: [(2, 4)]
+
+    Process node 4 (time=2): No neighbors → heap: empty
+
+    All 4 nodes visited. Maximum time = 2.
+
+Complexity Analysis
+Time Complexity: O((V+E)log⁡V)O((V+E)logV)
+    Each edge is processed once, and each heap operation (push/pop) takes O(log⁡V)O(logV)
+    With VV vertices and EE edges, total operations: O((V+E)log⁡V)O((V+E)logV)
+
+Space Complexity: O(V+E)O(V+E)
+    Adjacency list stores all edges: O(E)O(E)
+    Priority queue and visited tracking: O(V)O(V)
+    Total: O(V+E)O(V+E)
