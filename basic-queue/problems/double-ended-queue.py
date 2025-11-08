@@ -1,5 +1,7 @@
 """problem link: https://lightoj.com/problem/double-ended-queue"""
+
 from collections import deque
+
 
 def main():
     t = int(input())
@@ -43,4 +45,3 @@ def main():
                     print(f"Popped from right: {value}")
                 else:
                     print("The queue is empty")
-
